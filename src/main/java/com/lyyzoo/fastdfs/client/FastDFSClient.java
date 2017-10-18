@@ -7,6 +7,7 @@ import org.csource.common.NameValuePair;
 import org.csource.fastdfs.FileInfo;
 import org.csource.fastdfs.ProtoCommon;
 import org.csource.fastdfs.StorageClient1;
+import org.csource.fastdfs.TrackerServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
@@ -273,7 +274,8 @@ public class FastDFSClient {
             nvpsList.toArray(nvps);
         }
 
-        StorageClient1 storageClient = getStorageClient1();
+        TrackerServer trackerServer = TrackerServerPool.borrowObject();
+        StorageClient1 storageClient = new StorageClient1(trackerServer, null);
         try {
             // 读取流
             byte[] fileBuff = new byte[is.available()];
@@ -296,8 +298,6 @@ public class FastDFSClient {
             e.printStackTrace();
             throw new FastDFSException(ErrorCode.FILE_UPLOAD_FAILED.CODE, ErrorCode.FILE_UPLOAD_FAILED.MESSAGE);
         } finally {
-            // 返还对象
-            returnStorageClient1(storageClient);
             // 关闭流
             if(is != null){
                 try {
@@ -307,6 +307,8 @@ public class FastDFSClient {
                 }
             }
         }
+        // 返还对象
+        TrackerServerPool.returnObject(trackerServer);
 
         return path;
     }
@@ -366,7 +368,8 @@ public class FastDFSClient {
             logger.debug("download file, filepath = {}, filename = {}", filepath, filename);
         }
 
-        StorageClient1 storageClient = getStorageClient1();
+        TrackerServer trackerServer = TrackerServerPool.borrowObject();
+        StorageClient1 storageClient = new StorageClient1(trackerServer, null);
         InputStream is = null;
         try {
             // 下载
@@ -402,8 +405,6 @@ public class FastDFSClient {
             e.printStackTrace();
             throw new FastDFSException(ErrorCode.FILE_DOWNLOAD_FAILED.CODE, ErrorCode.FILE_DOWNLOAD_FAILED.MESSAGE);
         } finally {
-            // 返还对象
-            returnStorageClient1(storageClient);
             // 关闭流
             try {
                 if(is != null){
@@ -416,6 +417,8 @@ public class FastDFSClient {
                 e.printStackTrace();
             }
         }
+        // 返还对象
+        TrackerServerPool.returnObject(trackerServer);
     }
 
     /**
@@ -430,7 +433,8 @@ public class FastDFSClient {
             throw new FastDFSException(ErrorCode.FILE_PATH_ISNULL.CODE, ErrorCode.FILE_PATH_ISNULL.MESSAGE);
         }
 
-        StorageClient1 storageClient = getStorageClient1();
+        TrackerServer trackerServer = TrackerServerPool.borrowObject();
+        StorageClient1 storageClient = new StorageClient1(trackerServer, null);
         InputStream is = null;
         byte[] fileByte = null;
         try {
@@ -445,6 +449,8 @@ public class FastDFSClient {
             e.printStackTrace();
             throw new FastDFSException(ErrorCode.FILE_DOWNLOAD_FAILED.CODE, ErrorCode.FILE_DOWNLOAD_FAILED.MESSAGE);
         }
+        // 返还对象
+        TrackerServerPool.returnObject(trackerServer);
 
         return fileByte;
     }
@@ -459,8 +465,9 @@ public class FastDFSClient {
         if(StringUtils.isBlank(filepath)){
             throw new FastDFSException(ErrorCode.FILE_PATH_ISNULL.CODE, ErrorCode.FILE_PATH_ISNULL.MESSAGE);
         }
-        StorageClient1 storageClient = getStorageClient1();
 
+        TrackerServer trackerServer = TrackerServerPool.borrowObject();
+        StorageClient1 storageClient = new StorageClient1(trackerServer, null);
         int success = 0;
         try {
             success = storageClient.delete_file1(filepath);
@@ -473,6 +480,8 @@ public class FastDFSClient {
             e.printStackTrace();
             throw new FastDFSException(ErrorCode.FILE_DELETE_FAILED.CODE, ErrorCode.FILE_DELETE_FAILED.MESSAGE);
         }
+        // 返还对象
+        TrackerServerPool.returnObject(trackerServer);
 
         return success;
     }
@@ -493,7 +502,8 @@ public class FastDFSClient {
      * </pre>
      */
     public Map<String, Object> getFileInfo(String filepath) throws FastDFSException {
-        StorageClient1 storageClient = getStorageClient1();
+        TrackerServer trackerServer = TrackerServerPool.borrowObject();
+        StorageClient1 storageClient = new StorageClient1(trackerServer, null);
         FileInfo fileInfo = null;
         try {
             fileInfo = storageClient.get_file_info1(filepath);
@@ -502,6 +512,8 @@ public class FastDFSClient {
         } catch (MyException e) {
             e.printStackTrace();
         }
+        // 返还对象
+        TrackerServerPool.returnObject(trackerServer);
 
         Map<String, Object> infoMap = new HashMap<>();
 
@@ -520,7 +532,8 @@ public class FastDFSClient {
      * @return 文件描述信息
      */
     public Map<String, Object> getFileDescriptions(String filepath) throws FastDFSException {
-        StorageClient1 storageClient = getStorageClient1();
+        TrackerServer trackerServer = TrackerServerPool.borrowObject();
+        StorageClient1 storageClient = new StorageClient1(trackerServer, null);
         NameValuePair[] nvps = null;
         try {
             nvps = storageClient.get_metadata1(filepath);
@@ -529,6 +542,8 @@ public class FastDFSClient {
         } catch (MyException e) {
             e.printStackTrace();
         }
+        // 返还对象
+        TrackerServerPool.returnObject(trackerServer);
 
         Map<String, Object> infoMap = null;
 
@@ -555,24 +570,6 @@ public class FastDFSClient {
             return (String) descriptions.get(FILENAME);
         }
         return null;
-    }
-
-    /**
-     * 获取 StorageClient1 用于上传下载文件等操作 <br>
-     *
-     * @return StorageClient1
-     * @throws FastDFSException
-     */
-    private StorageClient1 getStorageClient1() throws FastDFSException {
-        return StorageClient1Pool.borrowObject();
-    }
-
-    /**
-     * StorageClient 用完之后返回到池中
-     * @param storageClient1
-     */
-    private void returnStorageClient1(StorageClient1 storageClient1){
-        StorageClient1Pool.returnObject(storageClient1);
     }
 
     /**

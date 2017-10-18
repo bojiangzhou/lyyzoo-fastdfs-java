@@ -4,7 +4,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.csource.common.MyException;
 import org.csource.fastdfs.ClientGlobal;
-import org.csource.fastdfs.StorageClient1;
+import org.csource.fastdfs.TrackerServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,19 +12,18 @@ import org.springframework.beans.factory.annotation.Value;
 import java.io.IOException;
 
 /**
- * StorageClient1 对象池
+ * TrackerServer 对象池
  * <p>
  *
  * @author jiangzhou.bo@hand-china.com
  * @version 1.0
- * @name StorageClient1Pool
  * @date 2017-10-14 15:23
  */
-public class StorageClient1Pool {
+public class TrackerServerPool {
     /**
      * org.slf4j.Logger
      */
-    private static Logger logger = LoggerFactory.getLogger(StorageClient1Pool.class);
+    private static Logger logger = LoggerFactory.getLogger(TrackerServerPool.class);
 
     /**
      * TrackerServer 配置文件路径
@@ -38,15 +37,15 @@ public class StorageClient1Pool {
     private static int maxStorageConnection;
 
     /**
-     * StorageClient1 对象池.
+     * TrackerServer 对象池.
      * GenericObjectPool 没有无参构造
      */
-    private static GenericObjectPool<StorageClient1> storageClientPool;
+    private static GenericObjectPool<TrackerServer> trackerServerPool;
 
-    private StorageClient1Pool(){};
+    private TrackerServerPool(){};
 
-    private static synchronized GenericObjectPool<StorageClient1> getObjectPool(){
-        if(storageClientPool == null){
+    private static synchronized GenericObjectPool<TrackerServer> getObjectPool(){
+        if(trackerServerPool == null){
             try {
                 // 加载配置文件
                 ClientGlobal.initByProperties(FASTDFS_CONFIG_PATH);
@@ -67,35 +66,36 @@ public class StorageClient1Pool {
                 poolConfig.setMaxTotal(maxStorageConnection);
             }
 
-            storageClientPool = new GenericObjectPool<>(new StorageClient1Factory(), poolConfig);
+            trackerServerPool = new GenericObjectPool<>(new TrackerServerFactory(), poolConfig);
         }
-        return storageClientPool;
+        return trackerServerPool;
     }
 
     /**
-     * 获取 StorageClient1
-     * @return StorageClient1
+     * 获取 TrackerServer
+     * @return TrackerServer
      * @throws FastDFSException
      */
-    public static StorageClient1 borrowObject() throws FastDFSException {
-        StorageClient1 storageClient1 = null;
+    public static TrackerServer borrowObject() throws FastDFSException {
+        TrackerServer trackerServer = null;
         try {
-            storageClient1 = getObjectPool().borrowObject();
+            trackerServer = getObjectPool().borrowObject();
         } catch (Exception e) {
             e.printStackTrace();
             if(e instanceof FastDFSException){
                 throw (FastDFSException) e;
             }
         }
-        return storageClient1;
+        return trackerServer;
     }
 
     /**
-     * 回收 StorageClient1
-     * @param storageClient1 需要回收的 StorageClient1
+     * 回收 TrackerServer
+     * @param trackerServer 需要回收的 TrackerServer
      */
-    public static void returnObject(StorageClient1 storageClient1){
-        getObjectPool().returnObject(storageClient1);
+    public static void returnObject(TrackerServer trackerServer){
+
+        getObjectPool().returnObject(trackerServer);
     }
 
 
