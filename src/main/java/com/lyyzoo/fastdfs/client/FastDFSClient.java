@@ -38,6 +38,10 @@ public class FastDFSClient {
      */
     public static final String SEPARATOR = "/";
     /**
+     * Point
+     */
+    public static final String POINT = ".";
+    /**
      * ContentType
      */
     public static final Map<String, String> EXT_MAPS = new HashMap<>();
@@ -515,7 +519,7 @@ public class FastDFSClient {
         // 返还对象
         TrackerServerPool.returnObject(trackerServer);
 
-        Map<String, Object> infoMap = new HashMap<>();
+        Map<String, Object> infoMap = new HashMap<>(4);
 
         infoMap.put("SourceIpAddr", fileInfo.getSourceIpAddr());
         infoMap.put("FileSize", fileInfo.getFileSize());
@@ -548,7 +552,7 @@ public class FastDFSClient {
         Map<String, Object> infoMap = null;
 
         if (nvps != null && nvps.length > 0) {
-            infoMap = new HashMap<>();
+            infoMap = new HashMap<>(nvps.length);
 
             for (NameValuePair nvp : nvps) {
                 infoMap.put(nvp.getName(), nvp.getValue());
@@ -585,8 +589,8 @@ public class FastDFSClient {
             if (filename.contains(SEPARATOR)) {
                 filename = filename.substring(filename.lastIndexOf(SEPARATOR) + 1);
             }
-            if (filename.contains(".")) {
-                suffix = filename.substring(filename.lastIndexOf(".") + 1);
+            if (filename.contains(POINT)) {
+                suffix = filename.substring(filename.lastIndexOf(POINT) + 1);
             } else {
                 if (logger.isErrorEnabled()) {
                     logger.error("filename error without suffix : {}", originalFilename);
@@ -607,9 +611,9 @@ public class FastDFSClient {
         if (StringUtils.isNotBlank(path)) {
             path = path.replaceAll("\\\\", SEPARATOR);
 
-            if (path.contains(".")) {
-                String pre = path.substring(0, path.lastIndexOf(".") + 1);
-                String suffix = path.substring(path.lastIndexOf(".") + 1).toLowerCase();
+            if (path.contains(POINT)) {
+                String pre = path.substring(0, path.lastIndexOf(POINT) + 1);
+                String suffix = path.substring(path.lastIndexOf(POINT) + 1).toLowerCase();
                 path = pre + suffix;
             }
         }

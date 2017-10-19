@@ -169,8 +169,8 @@ public class FileCheck {
      */
     public static String getFilenameSuffix(String filename) {
         String suffix = null;
-        if (StringUtils.isNotBlank(filename) && filename.contains(".")) {
-            suffix = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        if (StringUtils.isNotBlank(filename) && filename.contains(FastDFSClient.POINT)) {
+            suffix = filename.substring(filename.lastIndexOf(FastDFSClient.POINT) + 1).toLowerCase();
         }
         return suffix;
     }
