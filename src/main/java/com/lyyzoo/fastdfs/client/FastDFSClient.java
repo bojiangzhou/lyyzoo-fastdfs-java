@@ -570,7 +570,7 @@ public class FastDFSClient {
      */
     public String getOriginalFilename(String filepath) throws FastDFSException {
         Map<String, Object> descriptions = getFileDescriptions(filepath);
-        if (descriptions.get(FILENAME) != null) {
+        if (descriptions != null && descriptions.get(FILENAME) != null) {
             return (String) descriptions.get(FILENAME);
         }
         return null;
